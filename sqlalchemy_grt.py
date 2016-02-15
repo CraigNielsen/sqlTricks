@@ -21,6 +21,17 @@ AVAILABLE_TYPES = [
     'TEXT', 'TIME', 'TIMESTAMP', 'TINYBLOB', 'TINYINT', 'TINYTEXT', 'VARBINARY', 'VARCHAR',
     'YEAR']
 
+
+def buildInit(table):
+    func = []
+    func.append("    def __init__(self")
+    for i in table.columns:
+        func.append(", "+i.name)
+    func.append("):\n        ")
+    for i in table.columns:
+        func.append("self."+i.name+" = "+i.name+"\n        ")
+    return "".join(func).rstrip()
+
 def flask_sql_format(table):
     header = "\nfrom "+DB_MODEL_DIR+" import db\n\n"
     edited_table = str(table)
@@ -30,8 +41,9 @@ def flask_sql_format(table):
     edited_table = edited_table.replace(" Column", " db.Column")
     edited_table = edited_table.replace("DECLARATIVE_BASE", "db.Model")
     edited_table = edited_table.replace("ForeignKey", "db.ForeignKey")
-    
-    return header + edited_table
+    print "\n\n"
+    init=buildInit(table)
+    return header + edited_table + "\n\n" + init
 
 def camelize(name):
     return re.sub(r"(?:^|_)(.)", lambda x: x.group(0)[-1].upper(), name.lower())
@@ -440,7 +452,7 @@ for table in grt.root.wb.doc.physicalModels[0].catalog.schemata[0].tables:
 
 export = []
 export.append('"""')
-export.append('This file has been automatically generated with workbench_alchemy v%s' % VERSION)
+export.append('This file has been edited but original work was done by workbench_alchemy v%s' % VERSION)
 export.append('For more details please check here:')
 export.append('https://github.com/PiTiLeZarD/workbench_alchemy')
 export.append('"""')
@@ -492,7 +504,7 @@ for table in tables:
     if not os.path.exists(MODEL_PATH):
         os.makedirs(MODEL_PATH)
     with open(MODEL_PATH + "/" + table.name + ".py", "w") as classfile:
-        text_input= flask_sql_format(table)
+        text_input = flask_sql_format(table)
         classfile.write(text_input)
     export.append(str(table))
     export.append("end now \n")
