@@ -31,9 +31,7 @@ def load_file(folder, table_name):
         data.pop(0)  # rid of table names
         print data
         for row in data:
-            print "here"
             record = table(*row[0:])
-            print "now here"
             s.add(record)
         s.commit()      # Attempt to commit all the records
         print "committed " + table_name + " successfully"
